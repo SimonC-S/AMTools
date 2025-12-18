@@ -19,7 +19,7 @@ def getData(node:xml.dom.minidom.NodeList,convertValues:bool=True)->str:
         if node[0].childNodes[0].nodeValue is not None:
                 value=node[0].childNodes[0].nodeValue
                 if node[0].nodeName=="a1:Value" and convertValues:
-                    value=round(float(value)*2.54,1)
+                    value=str(round(float(value)*2.54,3))
                 return value
         else:
             value=getData(node[0].childNodes)
@@ -40,7 +40,7 @@ def unzip_specific_XML_file(file_path,target_inner_file_name)->xml.dom.minidom.N
                 DOMTree = xml.dom.minidom.parse(inner_zip_ref)
                 libraryData = DOMTree.documentElement
 
-            #zip_ref.extractall(extract_to)
+            zip_ref.extractall(extract_to)
             
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -53,8 +53,10 @@ def get_specific_XML_data(docXML:xml.dom.minidom.Node,targetIterableElement:str,
     :param relevantData: list of elements to extract data out of
     :param convertValues: values in value tag are stored in inches true convets them to mm false returns them as is
     """   
+    #ic(str(docXML.nodeName))
     processedDicts=[]
     materials=docXML.getElementsByTagName(targetIterableElement)
+    #ic(materials)
     #loops though each instance for the element you want data from
     for m in materials:
         materialDict={}
@@ -63,7 +65,7 @@ def get_specific_XML_data(docXML:xml.dom.minidom.Node,targetIterableElement:str,
             node=m.getElementsByTagName(d)
             materialDict[d]=getData(node)
         processedDicts.append(materialDict)
-    ic(processedDicts)
+    #ic(processedDicts)
     return processedDicts
 
 def extract_zip_file(file_path, extract_to):
@@ -83,13 +85,7 @@ def extract_zip_file(file_path, extract_to):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-       
 
-file_path = r"C:\patternsmith\1255 backrest.templates"
-extract_to = r"C:\Users\simon\Desktop\ExtractedFiles"
-#groupsXml=unzip_specific_XML_file(file_path,"Groups.xml",)
-#if groupsXml:
-#    get_specific_XML_data(groupsXml,"a2:MaterialTemplate",RELEVANT_TAGS.keys())
-#else:
-#    print(groupsXml)
-#extract_zip_file(file_path,extract_to)
+       
+file_path = r"C:\Users\SimonCaldwell\Desktop\extracted files\1254-XXXX-000-UPGR.templates"
+extract_to = r"C:\Users\SimonCaldwell\Desktop\extracted files"

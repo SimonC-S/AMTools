@@ -1,6 +1,6 @@
 
 import autometrixZipTools as AZT
-
+import os
 from icecream import ic
 from openpyxl import Workbook
 from openpyxl.workbook.defined_name import DefinedName
@@ -8,6 +8,8 @@ from openpyxl.utils import quote_sheetname, absolute_coordinate, get_column_lett
 import re
 import svg
 from random import choice
+TEMPLATE_PATH=r"C:\Users\SimonCaldwell\Medifab\Spex CNC - Controlled Files\Templates\1254-XXXX-2XX UPGR.templates"
+OUTPUT_FOLDER=''
 svgPath=r"C:\binary\tem.svg"
 rows = 4
 columns = 6
@@ -63,15 +65,15 @@ RelvantFeilds=[EXPR,
 
 def _getTier(var:dict,varDict:dict,tier=0)->int:
     tier+=1
-    ic((var[NAME]))
+    #ic((var[NAME]))
     if CONTAINS in var.keys() and len(var[CONTAINS])==0:
         return tier
     tierhold=tier
     
     for i,vie in enumerate(var[CONTAINS]):
-        ic(vie,tier,i)
-        ic(_getTier(VarDict[vie],varDict,tier=tier),tier)
-        tier=(max(_getTier(VarDict[vie],varDict,tier=tier),tier))
+        #ic(vie,tier,i)
+        #ic(_getTier(varDict[vie],varDict,tier=tier),tier)
+        tier=(max(_getTier(varDict[vie],varDict,tier=tier),tier))
         tierhold=max(tier,tierhold)
         tier=1
     return tierhold
@@ -82,11 +84,11 @@ def convert_Vars_to_units(parmeter:dict,otherParam:list[dict])->dict:
     def _re_sub_multiply_by(x):
         
         x=x.group(0) 
-        ic(len(otherParam))
+        #ic(len(otherParam))
         for op in otherParam:
-            ic(x,op[NAME])
+            #ic(x,op[NAME])
             if op[NAME]==x:
-                ic(UNITS_CONVERT[parmeter[UNITS]][op[UNITS]])
+                #ic(UNITS_CONVERT[parmeter[UNITS]][op[UNITS]])
                 factor=UNITS_CONVERT[parmeter[UNITS]][op[UNITS]]
                 if factor==1:
                     return x # no reaon to add *1
@@ -97,16 +99,18 @@ def convert_Vars_to_units(parmeter:dict,otherParam:list[dict])->dict:
         # for measured types Expression is a id for the line to be measured bad to convert that.
         return parmeter
     #paramUnitsFactor=CONVERT_TO_MM_FACTORS[parmeter[UNITS]]
-    ic(parmeter[EXPR])
+    #ic(parmeter[EXPR])
+    if parmeter[EXPR]==None:
+        return parmeter
     parmeter[EXPR]=re.sub(re_words_in_eq,_re_sub_multiply_by,parmeter[EXPR])
-    ic(parmeter[EXPR])
+    #ic(parmeter[EXPR])
     return parmeter
 
-XMLData=AZT.unzip_specific_XML_file(r"C:\patternsmith\1255 backrest.templates",r"Templates/Variables")
-parmData=AZT.get_specific_XML_data(XMLData,"KeyValueOfstringVariableKLLHlUQr",RelvantFeilds,convertValues=False)
-XMLData2=AZT.unzip_specific_XML_file(r"C:\patternsmith\1255 backrest.templates",r"Templates/BasicData")
-varData=AZT.get_specific_XML_data(XMLData2,"KeyValueOfstringVariableKLLHlUQr",RelvantFeilds,convertValues=False)
-ic(varData)
+XMLData=AZT.unzip_specific_XML_file(TEMPLATE_PATH,r"Templates/Variables")
+parmData=AZT.get_specific_XML_data(XMLData,"Variable",RelvantFeilds,convertValues=False)
+XMLData2=AZT.unzip_specific_XML_file(TEMPLATE_PATH,r"Templates/BasicData")
+varData=AZT.get_specific_XML_data(XMLData2,"Variable",RelvantFeilds,convertValues=False)
+#ic(varData)
 varData=varData+parmData
 wb=Workbook()
 ws=wb.active
@@ -125,11 +129,11 @@ for i,var in enumerate(varData):
     defn = DefinedName(var[NAME], attr_text=ref,publishToServer=True)
     ws.defined_names.add(defn)
 
-   
-print(ws.defined_names)
 
-wb.save("backrest_template_vars.xlsx")
+filename=os.path.basename(TEMPLATE_PATH).split(".")[0]
 
+wb.save(filename+".xlsx")
+'''
 VarDict={D[NAME]:D for D  in varData}
 ic(VarDict)
 for var in varData:
@@ -192,3 +196,4 @@ canvas = svg.SVG(
 
 with open(svgPath,"w+") as SVGFile:
     SVGFile.write(canvas.as_str())
+    '''
